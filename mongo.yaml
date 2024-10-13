@@ -1,9 +1,9 @@
 version: '3'
 services:
-  my-app:
-    image: 207567797123.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
-    ports:
-      - 3000:3000
+  # my-app:
+  #   image: 207567797123.dkr.ecr.us-east-1.amazonaws.com/my-app:1.0
+  #   ports:
+  #     - 3000:3000
   mongodb:
     image: mongo:5.0
     ports:
@@ -11,8 +11,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
-    # volumes:
-    #   - mongo-data:/data/db
+    volumes:
+      - mongo-data:/data/db
   mongo-express:
     image: mongo-express:0.54.0
     restart: always # fixes MongoNetworkError when mongodb is not ready when mongo-express starts
@@ -22,6 +22,6 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
       - ME_CONFIG_MONGODB_ADMINPASSWORD=password
       - ME_CONFIG_MONGODB_SERVER=mongodb
-# volumes:
-#   mongo-data:
-#     driver: local
+volumes:
+  mongo-data:
+    driver: local
