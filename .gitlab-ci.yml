@@ -1,0 +1,36 @@
+stages:
+  - setup
+  - deploy
+
+variables:
+  OPENSHIFT_NAMESPACE: "vector-namespace"  # Namespace to deploy to
+
+create_namespace:
+  stage: setup
+  image: registry.access.redhat.com/openshift3/ose-cli
+  script:
+    - echo "Logging into OpenShift"
+    - oc login $OPENSHIFT_API_URL --token=$OPENSHIFT_TOKEN --insecure-skip-tls-verify=true
+    - echo "Creating namespace if it does not exist"
+    - |
+      if ! oc get namespace $OPENSHIFT_NAMESPACE; then
+        oc create namespace $OPENSHIFT_NAMESPACE
+      else
+        echo "Namespace $OPENSHIFT_NAMESPACE already exists."
+      fi
+
+deploy_vector_chart:
+  stage: deploy
+  image: alpine/helm:3.9.0
+  before_script:
+    - echo "Logging into OpenShift"
+    - oc login $OPENSHIFT_API_URL --token=$OPENSHIFT_TOKEN --insecure-skip-tls-verify=true
+    - echo "Switching to namespace $OPENSHIFT_NAMESPACE"
+    - oc project $OPENSHIFT_NAMESPACE
+  script:
+    - helm repo add vector https://helm.vector.dev  # Add the vector helm repo
+    - helm repo update
+    - helm dependency update ./charts/vector
+    - helm upgrade --install vector ./charts/vector --namespace $OPENSHIFT_NAMESPACE -f ./charts/vector/values.yaml
+  only:
+    - main 
